@@ -30,49 +30,6 @@ const notificationItems = computed<DropdownMenuItem[][]>(() => [
   ]
 ])
 
-const teams = ref([
-  {
-    label: 'Nuxt',
-    avatar: {
-      src: 'https://github.com/nuxt.png',
-      alt: 'Nuxt'
-    }
-  },
-  {
-    label: 'Vue',
-    avatar: {
-      src: 'https://github.com/vuejs.png',
-      alt: 'Vue'
-    }
-  },
-  {
-    label: 'UnJS',
-    avatar: {
-      src: 'https://github.com/unjs.png',
-      alt: 'UnJS'
-    }
-  }
-])
-const selectedTeam = ref(teams.value[0])
-
-const teamsItems = computed<DropdownMenuItem[][]>(() => {
-  return [
-    teams.value.map((team, index) => ({
-      ...team,
-      kbds: ['meta', String(index + 1)],
-      onSelect() {
-        selectedTeam.value = team
-      }
-    })),
-    [
-      {
-        label: 'Create team',
-        icon: 'i-lucide-circle-plus'
-      }
-    ]
-  ]
-})
-
 const { data: navItems } = await useFetch('/api/side-menu')
 
 function getItems(state: 'collapsed' | 'expanded'): NavigationMenuItem[] {
@@ -163,8 +120,6 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
     }
   ]
 ])
-
-defineShortcuts(extractShortcuts(teamsItems.value))
 </script>
 
 <template>
@@ -180,23 +135,6 @@ defineShortcuts(extractShortcuts(teamsItems.value))
       }"
     >
       <template #header>
-        <UDropdownMenu
-            :items="teamsItems"
-            :content="{ align: 'start', collisionPadding: 12 }"
-            :ui="{ content: 'w-(--reka-dropdown-menu-trigger-width) min-w-48' }"
-        >
-          <UButton
-              v-bind="selectedTeam"
-              trailing-icon="i-lucide-chevrons-up-down"
-              color="neutral"
-              variant="ghost"
-              square
-              class="w-full data-[state=open]:bg-elevated overflow-hidden"
-              :ui="{
-              trailingIcon: 'text-dimmed ms-auto'
-            }"
-          />
-        </UDropdownMenu>
       </template>
 
       <template #default="{ state }">

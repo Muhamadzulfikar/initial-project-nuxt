@@ -25,3 +25,5 @@ logs
 
 # Claude
 .claude
+
+/app/generated/prisma

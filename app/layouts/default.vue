@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import type {DropdownMenuItem, NavigationMenuItem} from '@nuxt/ui'
-
 const open = ref(true)
-
-const colorMode = useColorMode()
-
 const route = useRoute()
 
 const pageNames: Record<string, string> = {
@@ -32,7 +27,7 @@ const notificationItems = computed<DropdownMenuItem[][]>(() => [
 
 const { data: navItems } = await useFetch('/api/side-menu')
 
-function getItems(state: 'collapsed' | 'expanded'): NavigationMenuItem[] {
+function getItems(): NavigationMenuItem[] {
   if (!navItems.value) return []
 
   return navItems.value.map((item) => ({

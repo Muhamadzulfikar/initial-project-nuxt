@@ -62,23 +62,8 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
       label: 'Profile',
       icon: 'i-lucide-user'
     },
-    {
-      label: 'Billing',
-      icon: 'i-lucide-credit-card'
-    },
-    {
-      label: 'Settings',
-      icon: 'i-lucide-settings',
-      to: '/settings'
-    }
   ],
   [
-    {
-      label: 'GitHub',
-      icon: 'i-simple-icons-github',
-      to: 'https://github.com/nuxt/ui',
-      target: '_blank'
-    },
     {
       label: 'Log out',
       icon: 'i-lucide-log-out'

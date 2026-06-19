@@ -73,42 +73,6 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Appearance',
-      icon: 'i-lucide-sun-moon',
-      children: [
-        {
-          label: 'Light',
-          icon: 'i-lucide-sun',
-          type: 'checkbox',
-          checked: colorMode.value === 'light',
-          onUpdateChecked(checked: boolean) {
-            if (checked) {
-              colorMode.preference = 'light'
-            }
-          },
-          onSelect(e: Event) {
-            e.preventDefault()
-          }
-        },
-        {
-          label: 'Dark',
-          icon: 'i-lucide-moon',
-          type: 'checkbox',
-          checked: colorMode.value === 'dark',
-          onUpdateChecked(checked: boolean) {
-            if (checked) {
-              colorMode.preference = 'dark'
-            }
-          },
-          onSelect(e: Event) {
-            e.preventDefault()
-          }
-        }
-      ]
-    }
-  ],
-  [
-    {
       label: 'GitHub',
       icon: 'i-simple-icons-github',
       to: 'https://github.com/nuxt/ui',

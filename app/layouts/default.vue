@@ -12,20 +12,26 @@ const pageNames: Record<string, string> = {
 
 const currentPageName = computed(() => pageNames[route.path] || 'Dashboard')
 
-const notificationCount = ref(3)
+const { data: notifications } = await useFetch('/api/notifications')
 
-const notificationItems = computed<DropdownMenuItem[][]>(() => [
-  [
-    { label: 'You have 3 new messages', icon: 'i-lucide-message' },
-    { label: 'Task assigned to you', icon: 'i-lucide-check-square' },
-    { label: 'Meeting in 15 minutes', icon: 'i-lucide-calendar' }
-  ],
-  [
-    { label: 'Mark all as read', icon: 'i-lucide-check-check' }
+const notificationCount = computed(() => notifications.value?.count ?? 0)
+
+const notificationItems = computed<DropdownMenuItem[][]>(() => {
+  if (!notifications.value?.data) return [[]]
+
+  return [
+    notifications.value.data.map(item => ({
+      label: item.label,
+      icon: 'i-lucide-dot',
+      to: item.to
+    })),
+    [
+      { label: 'Mark all as read', icon: 'i-lucide-check-check' }
+    ]
   ]
-])
+})
 
-const { data: navItems } = await useFetch('/api/side-menu')
+const { data: navItems } = await useFetch('/api/nav-items')
 
 function getItems(): NavigationMenuItem[] {
   if (!navItems.value) return []

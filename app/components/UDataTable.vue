@@ -7,74 +7,67 @@
 <script setup lang="ts">
 import {ref, computed, watch} from 'vue'
 
-const search = ref('')
 const page = ref(1)
 const pageSize = ref(10)
-
+const searchInput = ref('')
+const searchQuery = ref('')
 const sortKey = ref<string | null>(null)
 const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const pageSizeOptions = [10, 25, 50, 100]
 
 const props = defineProps({
-  tablesData: {
-    type: Object,
-    required: true,
-    default: () => ({data: [], total: 0})
-  },
   loading: {
     type: Boolean,
     default: false
   },
-  // Server-side mode props
   serverMode: {
     type: Boolean,
     default: false
   },
-  pageModel: {
-    type: Number,
-    default: 1
-  },
-  pageSizeModel: {
-    type: Number,
-    default: 10
-  },
-  searchModel: {
+  apiUrl: {
     type: String,
     default: ''
-  },
-  sortByModel: {
-    type: String,
-    default: null
-  },
-  sortOrderModel: {
-    type: String,
-    default: 'asc'
   }
 })
 
-const emit = defineEmits(['update:pageModel', 'update:pageSizeModel', 'update:searchModel', 'update:sortByModel', 'update:sortOrderModel'])
-
-// Sync with v-model in server mode
-watch(() => props.pageModel, (val) => {
-  if (props.serverMode) page.value = val
+const tablesData = ref({
+  data: [] as any[],
+  total: 0,
+  page: 1,
+  pageSize: 10
 })
 
-watch(() => props.pageSizeModel, (val) => {
-  if (props.serverMode) pageSize.value = val
-})
+const emit = defineEmits(['update:loading'])
 
-watch(() => props.searchModel, (val) => {
-  if (props.serverMode) search.value = val
-})
+const queryParams = computed(() => ({
+  page: page.value,
+  pageSize: pageSize.value,
+  search: searchQuery.value,
+  sortBy: sortKey.value,
+  sortOrder: sortOrder.value
+}))
 
-watch(() => props.sortByModel, (val) => {
-  if (props.serverMode) sortKey.value = val
-})
+async function fetchData() {
+  if (!props.serverMode || !props.apiUrl) return
 
-watch(() => props.sortOrderModel, (val) => {
-  if (props.serverMode) sortOrder.value = val
-})
+  emit('update:loading', true)
+  try {
+    const result = await $fetch(props.apiUrl, { query: queryParams.value })
+    tablesData.value = result as any
+  } finally {
+    emit('update:loading', false)
+  }
+}
+
+watch(queryParams, () => {
+  if (props.serverMode) {
+    fetchData()
+  }
+}, { deep: true })
+
+// Expose for parent to trigger initial fetch
+defineExpose({ fetchData })
 
 function handleSort(key: string) {
   if (key === 'actions') return
@@ -91,25 +84,19 @@ function handleSort(key: string) {
     sortOrder.value = 'asc'
   }
   page.value = 1
-
-  if (props.serverMode) {
-    emit('update:sortByModel', sortKey.value)
-    emit('update:sortOrderModel', sortOrder.value)
-    emit('update:pageModel', 1)
-  }
 }
 
 function handleSearch() {
+  searchQuery.value = searchInput.value
   page.value = 1
   if (props.serverMode) {
-    emit('update:searchModel', search.value)
-    emit('update:pageModel', 1)
+    fetchData()
   }
 }
 
 const columns = computed(() => {
-  if (!props.tablesData?.data?.length) return []
-  const firstRow = props.tablesData.data[0]
+  if (!tablesData.value?.data?.length) return []
+  const firstRow = tablesData.value.data[0]
 
   const cols = Object.keys(firstRow).map(key => ({
     id: key,
@@ -132,13 +119,13 @@ const columns = computed(() => {
 
 // Client-side filtering & sorting (only when NOT in server mode)
 const filteredData = computed(() => {
-  if (props.serverMode) return props.tablesData?.data || []
-  if (!props.tablesData?.data) return []
+  if (props.serverMode) return tablesData.value?.data || []
+  if (!tablesData.value?.data) return []
 
-  let items = props.tablesData.data
+  let items = tablesData.value.data
 
-  if (!search.value) return items
-  const searchQ = search.value.toLowerCase()
+  if (!searchInput.value) return items
+  const searchQ = searchInput.value.toLowerCase()
   return items.filter((item: any) =>
       Object.values(item).some(val =>
           String(val).toLowerCase().includes(searchQ)
@@ -147,7 +134,7 @@ const filteredData = computed(() => {
 })
 
 const sortedData = computed(() => {
-  if (props.serverMode) return props.tablesData?.data || []
+  if (props.serverMode) return tablesData.value?.data || []
 
   const items = [...filteredData.value]
 
@@ -171,20 +158,20 @@ const sortedData = computed(() => {
 
 const totalPages = computed(() => {
   if (props.serverMode) {
-    const total = props.tablesData?.total || 0
+    const total = tablesData.value?.total || 0
     return Math.ceil(total / pageSize.value) || 1
   }
   return Math.ceil(sortedData.value.length / pageSize.value) || 1
 })
 
 const paginatedData = computed(() => {
-  if (props.serverMode) return props.tablesData?.data || []
+  if (props.serverMode) return tablesData.value?.data || []
   const start = (page.value - 1) * pageSize.value
   return sortedData.value.slice(start, start + pageSize.value)
 })
 
-watch(search, () => {
-  page.value = 1
+watch(searchInput, () => {
+  if (!props.serverMode) page.value = 1
 })
 
 watch(pageSize, () => {
@@ -194,45 +181,29 @@ watch(pageSize, () => {
 function prevPage() {
   if (page.value > 1) {
     page.value--
-    if (props.serverMode) {
-      emit('update:pageModel', page.value)
-    }
   }
 }
 
 function nextPage() {
   if (page.value < totalPages.value) {
     page.value++
-    if (props.serverMode) {
-      emit('update:pageModel', page.value)
-    }
   }
 }
 
 function firstPage() {
   if (page.value !== 1) {
     page.value = 1
-    if (props.serverMode) {
-      emit('update:pageModel', 1)
-    }
   }
 }
 
 function lastPage() {
   if (page.value !== totalPages.value) {
     page.value = totalPages.value
-    if (props.serverMode) {
-      emit('update:pageModel', totalPages.value)
-    }
   }
 }
 
 function onPageSizeChange() {
   page.value = 1
-  if (props.serverMode) {
-    emit('update:pageSizeModel', pageSize.value)
-    emit('update:pageModel', 1)
-  }
 }
 </script>
 
@@ -240,7 +211,7 @@ function onPageSizeChange() {
   <UCard>
     <div class="flex justify-end gap-2 mb-4">
       <UInput
-        v-model="search"
+        v-model="searchInput"
         placeholder="Search..."
         @keyup.enter="handleSearch"
       />

@@ -2,16 +2,6 @@
 const open = ref(true)
 const route = useRoute()
 
-const pageNames: Record<string, string> = {
-  '/': 'Dashboard',
-  '/analytics': 'Analytics',
-  '/projects': 'Projects',
-  '/settings': 'Settings',
-  '/datatable': 'Data Table'
-}
-
-const currentPageName = computed(() => pageNames[route.path] || 'Dashboard')
-
 const { data: notifications } = await useFetch('/api/notifications')
 
 const notificationCount = computed(() => notifications.value?.count ?? 0)
@@ -128,7 +118,6 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
               aria-label="Toggle sidebar"
               @click="open = !open"
           />
-          <h1 class="text-lg font-semibold">{{ currentPageName }}</h1>
         </div>
 
         <div class="flex items-center gap-2">

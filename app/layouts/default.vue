@@ -2,7 +2,7 @@
 const open = ref(true)
 const route = useRoute()
 
-const { data: notifications } = await useFetch('/api/notifications')
+const {data: notifications} = await useFetch('/api/notifications')
 
 const notificationCount = computed(() => notifications.value?.count ?? 0)
 
@@ -16,12 +16,12 @@ const notificationItems = computed<DropdownMenuItem[][]>(() => {
       to: item.to
     })),
     [
-      { label: 'Mark all as read', icon: 'i-lucide-check-check' }
+      {label: 'Mark all as read', icon: 'i-lucide-check-check'}
     ]
   ]
 })
 
-const { data: navItems } = await useFetch('/api/nav-items')
+const {data: navItems} = await useFetch('/api/nav-items')
 
 function getItems(): NavigationMenuItem[] {
   if (!navItems.value) return []
@@ -38,28 +38,6 @@ function getItems(): NavigationMenuItem[] {
   })) satisfies NavigationMenuItem[]
 }
 
-const user = ref({
-  name: 'Benjamin Canac',
-  avatar: {
-    src: 'https://github.com/benjamincanac.png',
-    alt: 'Benjamin Canac'
-  }
-})
-
-const userItems = computed<DropdownMenuItem[][]>(() => [
-  [
-    {
-      label: 'Profile',
-      icon: 'i-lucide-user'
-    },
-  ],
-  [
-    {
-      label: 'Log out',
-      icon: 'i-lucide-log-out'
-    }
-  ]
-])
 </script>
 
 <template>
@@ -67,14 +45,9 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
     <USidebar
         v-model:open="open"
         collapsible="icon"
-        rail
-        :ui="{
-        container: 'h-full',
-        inner: 'bg-elevated/25 divide-transparent',
-        body: 'py-0'
-      }"
     >
       <template #header>
+        <UHeader />
       </template>
 
       <template #default="{ state }">
@@ -82,29 +55,11 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
             :key="state"
             :items="getItems(state)"
             orientation="vertical"
-            :ui="{ link: 'p-1.5 overflow-hidden' }"
+            :ui="{ link: 'mb-2 overflow-hidden' }"
         />
       </template>
 
       <template #footer>
-        <UDropdownMenu
-            :items="userItems"
-            :content="{ align: 'center', collisionPadding: 12 }"
-            :ui="{ content: 'w-(--reka-dropdown-menu-trigger-width) min-w-48' }"
-        >
-          <UButton
-              v-bind="user"
-              :label="user?.name"
-              trailing-icon="i-lucide-chevrons-up-down"
-              color="neutral"
-              variant="ghost"
-              square
-              class="w-full data-[state=open]:bg-elevated overflow-hidden"
-              :ui="{
-              trailingIcon: 'text-dimmed ms-auto'
-            }"
-          />
-        </UDropdownMenu>
       </template>
     </USidebar>
 
@@ -112,7 +67,7 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
       <div class="h-(--ui-header-height) shrink-0 flex items-center justify-between px-4 border-b border-default">
         <div class="flex items-center gap-3">
           <UButton
-              icon="i-lucide-panel-left"
+              icon="i-lucide-menu"
               color="neutral"
               variant="ghost"
               aria-label="Toggle sidebar"
@@ -120,32 +75,30 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
           />
         </div>
 
-        <div class="flex items-center gap-2">
-          <UDropdownMenu
-              :items="notificationItems"
-              :content="{ align: 'end', collisionPadding: 12 }"
+        <UDropdownMenu
+            :items="notificationItems"
+            :content="{ align: 'end', collisionPadding: 12 }"
+        >
+          <UButton
+              color="neutral"
+              variant="ghost"
+              aria-label="Notifications"
+              class="relative"
           >
-            <UButton
-                color="neutral"
-                variant="ghost"
-                aria-label="Notifications"
-                class="relative"
-            >
-              <UIcon name="i-lucide-bell" class="w-5 h-5" />
-              <UBadge
-                  v-if="notificationCount > 0"
-                  :label="notificationCount > 9 ? '9+' : String(notificationCount)"
-                  color="error"
-                  variant="solid"
-                  class="absolute -top-1 -right-1 min-w-5 h-5 justify-center"
-              />
-            </UButton>
-          </UDropdownMenu>
-        </div>
+            <UIcon name="i-lucide-bell" class="w-5 h-5"/>
+            <UBadge
+                v-if="notificationCount > 0"
+                :label="notificationCount > 9 ? '9+' : String(notificationCount)"
+                color="error"
+                variant="solid"
+                class="absolute -top-1 -right-1 min-w-5 h-5 justify-center"
+            />
+          </UButton>
+        </UDropdownMenu>
       </div>
 
       <main class="flex-1 p-6 overflow-auto">
-        <slot />
+        <slot/>
       </main>
     </div>
   </div>

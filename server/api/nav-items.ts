@@ -4,18 +4,13 @@ export default defineEventHandler(async (event) => {
     if (method == "GET") {
         return [
             {
-                label: 'Inbox',
-                icon: 'i-lucide-inbox',
-                to: '/datatable'
+                label: 'Dashboard',
+                icon: 'i-lucide-pie-chart',
+                to: '/'
             },
             {
-                label: 'Issues',
-                icon: 'i-lucide-square-dot',
-                to: '/datatable'
-            },
-            {
-                label: 'Activity',
-                icon: 'i-lucide-square-activity',
+                label: 'Datatable',
+                icon: 'i-lucide-table',
                 to: '/datatable'
             },
             {
@@ -23,19 +18,24 @@ export default defineEventHandler(async (event) => {
                 icon: 'i-lucide-settings',
                 children: [
                     {
-                        label: 'General',
-                        icon: 'i-lucide-house',
-                        to: '/datatable'
+                        label: 'Navigation',
+                        icon: 'i-lucide-map',
+                        to: ''
                     },
                     {
-                        label: 'Team',
-                        icon: 'i-lucide-users',
-                        to: '/datatable'
+                        label: 'Roles',
+                        icon: 'i-lucide-lock',
+                        to: ''
                     },
                     {
-                        label: 'Billing',
-                        icon: 'i-lucide-credit-card',
-                        to: '/datatables',
+                        label: 'Logging',
+                        icon: 'i-lucide-clock',
+                        to: ''
+                    },
+                    {
+                        label: 'Config',
+                        icon: 'i-lucide-database',
+                        to: '',
                     }
                 ],
             },

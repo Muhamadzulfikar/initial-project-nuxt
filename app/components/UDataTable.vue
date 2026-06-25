@@ -21,7 +21,59 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({data: [], total: 0})
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  // Server-side mode props
+  serverMode: {
+    type: Boolean,
+    default: false
+  },
+  pageModel: {
+    type: Number,
+    default: 1
+  },
+  pageSizeModel: {
+    type: Number,
+    default: 10
+  },
+  searchModel: {
+    type: String,
+    default: ''
+  },
+  sortByModel: {
+    type: String,
+    default: null
+  },
+  sortOrderModel: {
+    type: String,
+    default: 'asc'
   }
+})
+
+const emit = defineEmits(['update:pageModel', 'update:pageSizeModel', 'update:searchModel', 'update:sortByModel', 'update:sortOrderModel'])
+
+// Sync with v-model in server mode
+watch(() => props.pageModel, (val) => {
+  if (props.serverMode) page.value = val
+})
+
+watch(() => props.pageSizeModel, (val) => {
+  if (props.serverMode) pageSize.value = val
+})
+
+watch(() => props.searchModel, (val) => {
+  if (props.serverMode) search.value = val
+})
+
+watch(() => props.sortByModel, (val) => {
+  if (props.serverMode) sortKey.value = val
+})
+
+watch(() => props.sortOrderModel, (val) => {
+  if (props.serverMode) sortOrder.value = val
 })
 
 function handleSort(key: string) {
@@ -32,12 +84,27 @@ function handleSort(key: string) {
       sortOrder.value = 'desc'
     } else {
       sortKey.value = null
+      sortOrder.value = 'asc'
     }
   } else {
     sortKey.value = key
     sortOrder.value = 'asc'
   }
   page.value = 1
+
+  if (props.serverMode) {
+    emit('update:sortByModel', sortKey.value)
+    emit('update:sortOrderModel', sortOrder.value)
+    emit('update:pageModel', 1)
+  }
+}
+
+function handleSearch() {
+  page.value = 1
+  if (props.serverMode) {
+    emit('update:searchModel', search.value)
+    emit('update:pageModel', 1)
+  }
 }
 
 const columns = computed(() => {
@@ -63,8 +130,11 @@ const columns = computed(() => {
   return cols
 })
 
+// Client-side filtering & sorting (only when NOT in server mode)
 const filteredData = computed(() => {
+  if (props.serverMode) return props.tablesData?.data || []
   if (!props.tablesData?.data) return []
+
   let items = props.tablesData.data
 
   if (!search.value) return items
@@ -77,6 +147,8 @@ const filteredData = computed(() => {
 })
 
 const sortedData = computed(() => {
+  if (props.serverMode) return props.tablesData?.data || []
+
   const items = [...filteredData.value]
 
   if (!sortKey.value) return items
@@ -98,11 +170,15 @@ const sortedData = computed(() => {
 })
 
 const totalPages = computed(() => {
-  const total = Math.ceil(sortedData.value.length / pageSize.value)
-  return total > 0 ? total : 1
+  if (props.serverMode) {
+    const total = props.tablesData?.total || 0
+    return Math.ceil(total / pageSize.value) || 1
+  }
+  return Math.ceil(sortedData.value.length / pageSize.value) || 1
 })
 
 const paginatedData = computed(() => {
+  if (props.serverMode) return props.tablesData?.data || []
   const start = (page.value - 1) * pageSize.value
   return sortedData.value.slice(start, start + pageSize.value)
 })
@@ -116,24 +192,66 @@ watch(pageSize, () => {
 })
 
 function prevPage() {
-  if (page.value > 1) page.value--
+  if (page.value > 1) {
+    page.value--
+    if (props.serverMode) {
+      emit('update:pageModel', page.value)
+    }
+  }
 }
 
 function nextPage() {
-  if (page.value < totalPages.value) page.value++
+  if (page.value < totalPages.value) {
+    page.value++
+    if (props.serverMode) {
+      emit('update:pageModel', page.value)
+    }
+  }
+}
+
+function firstPage() {
+  if (page.value !== 1) {
+    page.value = 1
+    if (props.serverMode) {
+      emit('update:pageModel', 1)
+    }
+  }
+}
+
+function lastPage() {
+  if (page.value !== totalPages.value) {
+    page.value = totalPages.value
+    if (props.serverMode) {
+      emit('update:pageModel', totalPages.value)
+    }
+  }
+}
+
+function onPageSizeChange() {
+  page.value = 1
+  if (props.serverMode) {
+    emit('update:pageSizeModel', pageSize.value)
+    emit('update:pageModel', 1)
+  }
 }
 </script>
 
 <template>
   <UCard>
-    <div class="flex justify-end">
-      <UInput v-model="search" placeholder="Search..." class="mb-4"/>
+    <div class="flex justify-end gap-2 mb-4">
+      <UInput
+        v-model="search"
+        placeholder="Search..."
+        @keyup.enter="handleSearch"
+      />
+      <UButton icon="i-lucide-search" variant="soft" @click="handleSearch"/>
     </div>
 
     <UTable
         :data="paginatedData"
         :columns="columns"
         class="flex-1"
+        :loading="loading"
     >
       <template v-for="col in columns" #[`${col.key}-header`]="{ column }">
         <div
@@ -162,6 +280,7 @@ function nextPage() {
         <select
             v-model.number="pageSize"
             class="block w-20 rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-primary-600 sm:text-sm bg-white dark:bg-gray-900 dark:text-white dark:ring-gray-700"
+            @change="onPageSizeChange"
         >
           <option v-for="option in pageSizeOptions" :key="option" :value="option">
             {{ option }}
@@ -170,9 +289,11 @@ function nextPage() {
       </div>
 
       <div class="flex items-center gap-2">
+        <UButton icon="i-lucide-chevrons-left" variant="ghost" :disabled="page === 1" @click="firstPage"/>
         <UButton icon="i-lucide-chevron-left" variant="ghost" :disabled="page === 1" @click="prevPage"/>
         <span class="text-sm text-muted">Page {{ page }} of {{ totalPages }}</span>
         <UButton icon="i-lucide-chevron-right" variant="ghost" :disabled="page === totalPages" @click="nextPage"/>
+        <UButton icon="i-lucide-chevrons-right" variant="ghost" :disabled="page === totalPages" @click="lastPage"/>
       </div>
     </div>
   </UCard>

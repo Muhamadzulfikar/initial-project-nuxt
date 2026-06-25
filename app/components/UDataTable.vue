@@ -238,6 +238,7 @@ function onPageSizeChange() {
 
           <div v-if="col.key !== 'actions'" class="flex flex-col text-[10px] leading-[6px]">
             <span
+                class="mb-1"
                 :class="sortKey === col.key && sortOrder === 'asc' ? 'text-primary-600 dark:text-primary-400 font-bold' : 'text-gray-400 dark:text-gray-600'"
             >▲</span>
             <span

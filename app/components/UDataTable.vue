@@ -44,35 +44,36 @@ const tablesData = ref({
 
 const emit = defineEmits(['update:loading'])
 
-const queryParams = computed(() => ({
-  page: page.value,
-  pageSize: pageSize.value,
-  search: searchQuery.value,
-  sortBy: sortKey.value,
-  sortOrder: sortOrder.value,
-  ...props.filters
-}))
-
 async function fetchData() {
   if (!props.serverMode || !props.apiUrl) return
 
   emit('update:loading', true)
   try {
-    const result = await $fetch(props.apiUrl, { query: queryParams.value })
+    const query = {
+      page: page.value,
+      pageSize: pageSize.value,
+      search: searchQuery.value,
+      sortBy: sortKey.value,
+      sortOrder: sortOrder.value,
+      ...props.filters
+    }
+    const result = await $fetch(props.apiUrl, {query})
     tablesData.value = result as any
   } finally {
     emit('update:loading', false)
   }
 }
 
-watch(queryParams, () => {
-  if (props.serverMode) {
-    fetchData()
-  }
-}, { deep: true })
+watch(
+    [page, pageSize, searchQuery, sortKey, sortOrder, () => JSON.stringify(props.filters)],
+    () => {
+      if (props.serverMode) {
+        fetchData()
+      }
+    }
+)
 
-// Expose for parent to trigger initial fetch
-defineExpose({ fetchData })
+defineExpose({fetchData})
 
 function handleSort(key: string) {
   if (key === 'actions') return
@@ -100,10 +101,10 @@ function handleSearch() {
 }
 
 const columns = computed(() => {
-  if (!tablesData.value?.data?.length) return []
-  const firstRow = tablesData.value.data[0]
+  const dataArray = tablesData.value?.data
+  if (!dataArray || dataArray.length === 0) return []
 
-  const cols = Object.keys(firstRow).map(key => ({
+  const cols = Object.keys(dataArray[0]).map(key => ({
     id: key,
     key: key,
     accessorKey: key,
@@ -122,7 +123,6 @@ const columns = computed(() => {
   return cols
 })
 
-// Client-side filtering & sorting (only when NOT in server mode)
 const filteredData = computed(() => {
   if (props.serverMode) return tablesData.value?.data || []
   if (!tablesData.value?.data) return []
@@ -216,9 +216,9 @@ function onPageSizeChange() {
   <UCard>
     <div class="flex justify-end gap-2 mb-4">
       <UInput
-        v-model="searchInput"
-        placeholder="Search..."
-        @keyup.enter="handleSearch"
+          v-model="searchInput"
+          placeholder="Search..."
+          @keyup.enter="handleSearch"
       />
       <UButton icon="i-lucide-search" variant="soft" @click="handleSearch"/>
     </div>
@@ -238,9 +238,11 @@ function onPageSizeChange() {
 
           <div v-if="col.key !== 'actions'" class="flex flex-col text-[10px] leading-[6px]">
             <span
-                :class="sortKey === col.key && sortOrder === 'asc' ? 'text-primary-600 dark:text-primary-400 font-bold' : 'text-gray-400 dark:text-gray-600'">▲</span>
+                :class="sortKey === col.key && sortOrder === 'asc' ? 'text-primary-600 dark:text-primary-400 font-bold' : 'text-gray-400 dark:text-gray-600'"
+            >▲</span>
             <span
-                :class="sortKey === col.key && sortOrder === 'desc' ? 'text-primary-600 dark:text-primary-400 font-bold' : 'text-gray-400 dark:text-gray-600'">▼</span>
+                :class="sortKey === col.key && sortOrder === 'desc' ? 'text-primary-600 dark:text-primary-400 font-bold' : 'text-gray-400 dark:text-gray-600'"
+            >▼</span>
           </div>
         </div>
       </template>

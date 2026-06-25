@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
         const page = parseInt(query.page as string) || 1
         const pageSize = parseInt(query.pageSize as string) || 10
         const search = (query.search as string || '').toLowerCase()
+        const status = query.status as string || ''
         const sortBy = query.sortBy as string | null
         const sortOrder = query.sortOrder as 'asc' | 'desc' || 'asc'
 
@@ -72,6 +73,11 @@ export default defineEventHandler(async (event) => {
                     String(val).toLowerCase().includes(search)
                 )
             )
+        }
+
+        // Status filter
+        if (status) {
+            filtered = filtered.filter(row => row.status === status)
         }
 
         // Sort

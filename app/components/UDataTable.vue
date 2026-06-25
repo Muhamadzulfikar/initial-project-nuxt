@@ -28,6 +28,10 @@ const props = defineProps({
   apiUrl: {
     type: String,
     default: ''
+  },
+  filters: {
+    type: Object,
+    default: () => ({})
   }
 })
 
@@ -45,7 +49,8 @@ const queryParams = computed(() => ({
   pageSize: pageSize.value,
   search: searchQuery.value,
   sortBy: sortKey.value,
-  sortOrder: sortOrder.value
+  sortOrder: sortOrder.value,
+  ...props.filters
 }))
 
 async function fetchData() {

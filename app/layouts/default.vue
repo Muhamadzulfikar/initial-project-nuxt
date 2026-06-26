@@ -26,16 +26,23 @@ const {data: navItems} = await useFetch('/api/nav-items')
 function getItems(): NavigationMenuItem[] {
   if (!navItems.value) return []
 
-  return navItems.value.map((item) => ({
-    label: item.label,
-    icon: item.icon,
-    to: item.to,
-    children: item.children?.map(child => ({
-      label: child.label,
-      icon: child.icon,
-      to: child.to
-    }))
-  })) satisfies NavigationMenuItem[]
+  const currentPath = route.path
+
+  return navItems.value.map((item) => {
+    const hasActiveChild = item.children?.some(child => child.to === currentPath)
+
+    return {
+      label: item.label,
+      icon: item.icon,
+      to: item.to,
+      defaultOpen: hasActiveChild ? true : undefined,
+      children: item.children?.map(child => ({
+        label: child.label,
+        icon: child.icon,
+        to: child.to
+      }))
+    }
+  }) satisfies NavigationMenuItem[]
 }
 
 </script>
@@ -53,7 +60,7 @@ function getItems(): NavigationMenuItem[] {
       <template #default="{ state }">
         <UNavigationMenu
             :key="state"
-            :items="getItems(state)"
+            :items="getItems()"
             orientation="vertical"
             :ui="{ link: 'mb-2 overflow-hidden' }"
         />

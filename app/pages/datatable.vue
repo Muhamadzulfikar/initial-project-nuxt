@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import type {SelectItem, BreadCrumbItem} from '@nuxt/ui'
 
-const loading = ref(false)
-const dataTableRef = ref()
+const loading = ref(true)
 const statusFilter = ref()
 
 const statusOptions = <SelectItem[]>([
@@ -15,10 +14,6 @@ const statusOptions = <SelectItem[]>([
 const breadcrumbs = <BreadCrumbItem[]>([
   {label: 'Datatable', icon: 'i-lucide-table',  to: '/datatable'}
 ])
-
-onMounted(() => {
-  dataTableRef.value?.fetchData()
-})
 </script>
 
 <template>
@@ -38,11 +33,16 @@ onMounted(() => {
   </UCard>
 
   <UDataTable
-      ref="dataTableRef"
-      server-mode
       api-url="/api/datatables"
-      :loading=true
+      :loading=loading
       :filters="{ status: statusFilter }"
+      :columns="[
+        { key: 'id', label: 'ID' },
+        { key: 'date', label: 'Date' },
+        { key: 'status', label: 'Status' },
+        { key: 'email', label: 'Email' },
+        { key: 'amount', label: 'Amount' }
+      ]"
       @update:loading="loading = $event"
   >
     <template #status-cell="{ row }">

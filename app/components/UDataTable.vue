@@ -21,10 +21,6 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  serverMode: {
-    type: Boolean,
-    default: false
-  },
   apiUrl: {
     type: String,
     default: ''
@@ -32,6 +28,14 @@ const props = defineProps({
   filters: {
     type: Object,
     default: () => ({})
+  },
+  columns: {
+    type: Array as PropType<{key: string, label: string}[]>,
+    default: () => []
+  },
+  isHideActions: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -45,7 +49,7 @@ const tablesData = ref({
 const emit = defineEmits(['update:loading'])
 
 async function fetchData() {
-  if (!props.serverMode || !props.apiUrl) return
+  if (!props.apiUrl) return
 
   emit('update:loading', true)
   try {
@@ -66,11 +70,8 @@ async function fetchData() {
 
 watch(
     [page, pageSize, searchQuery, sortKey, sortOrder, () => JSON.stringify(props.filters)],
-    () => {
-      if (props.serverMode) {
-        fetchData()
-      }
-    }
+    () => fetchData(),
+    { immediate: true }
 )
 
 defineExpose({fetchData})
@@ -95,88 +96,38 @@ function handleSort(key: string) {
 function handleSearch() {
   searchQuery.value = searchInput.value
   page.value = 1
-  if (props.serverMode) {
-    fetchData()
-  }
+  fetchData()
 }
 
-const columns = computed(() => {
-  const dataArray = tablesData.value?.data
-  if (!dataArray || dataArray.length === 0) return []
-
-  const cols = Object.keys(dataArray[0]).map(key => ({
-    id: key,
-    key: key,
-    accessorKey: key,
-    header: key.charAt(0).toUpperCase() + key.slice(1),
+const tableColumns = computed(() => {
+  const cols = props.columns.map(col => ({
+    id: col.key,
+    key: col.key,
+    accessorKey: col.key,
+    header: col.label,
     class: 'cursor-pointer select-none'
   }))
 
-  cols.push({
-    id: 'actions',
-    key: 'actions',
-    accessorKey: 'actions',
-    header: 'Actions',
-    class: ''
-  })
+  if (!props.isHideActions) {
+    cols.push({
+      id: 'actions',
+      key: 'actions',
+      accessorKey: 'actions',
+      header: 'Actions',
+      class: ''
+    })
+  }
 
   return cols
 })
 
-const filteredData = computed(() => {
-  if (props.serverMode) return tablesData.value?.data || []
-  if (!tablesData.value?.data) return []
-
-  let items = tablesData.value.data
-
-  if (!searchInput.value) return items
-  const searchQ = searchInput.value.toLowerCase()
-  return items.filter((item: any) =>
-      Object.values(item).some(val =>
-          String(val).toLowerCase().includes(searchQ)
-      )
-  )
-})
-
-const sortedData = computed(() => {
-  if (props.serverMode) return tablesData.value?.data || []
-
-  const items = [...filteredData.value]
-
-  if (!sortKey.value) return items
-
-  const key = sortKey.value
-  const order = sortOrder.value
-
-  return items.sort((a: any, b: any) => {
-    let valA = a[key]
-    let valB = b[key]
-
-    if (typeof valA === 'string') valA = valA.toLowerCase()
-    if (typeof valB === 'string') valB = valB.toLowerCase()
-
-    if (valA < valB) return order === 'asc' ? -1 : 1
-    if (valA > valB) return order === 'asc' ? 1 : -1
-    return 0
-  })
-})
-
 const totalPages = computed(() => {
-  if (props.serverMode) {
-    const total = tablesData.value?.total || 0
-    return Math.ceil(total / pageSize.value) || 1
-  }
-  return Math.ceil(sortedData.value.length / pageSize.value) || 1
+  const total = tablesData.value?.total || 0
+  return Math.ceil(total / pageSize.value) || 1
 })
 
 const paginatedData = computed(() => {
-  if (props.serverMode) return tablesData.value?.data || []
-  const start = (page.value - 1) * pageSize.value
-  return sortedData.value.slice(start, start + pageSize.value)
-})
-
-watch(searchInput, () => {
-  if (!props.serverMode) page.value = 1
+  return tablesData.value?.data || []
 })
 
 watch(pageSize, () => {
@@ -225,11 +176,11 @@ function onPageSizeChange() {
 
     <UTable
         :data="paginatedData"
-        :columns="columns"
+        :columns="tableColumns"
         class="flex-1"
         :loading="loading"
     >
-      <template v-for="col in columns" #[`${col.key}-header`]="{ column }">
+      <template v-for="col in tableColumns" #[`${col.key}-header`]="{ column }">
         <div
             :class="col.key !== 'actions' ? 'cursor-pointer hover:text-primary-600 flex items-center justify-between gap-1 select-none w-full h-full' : ''"
             @click="handleSort(col.key)"

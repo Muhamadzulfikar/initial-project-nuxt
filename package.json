@@ -20,9 +20,7 @@
     "nuxt": "^4.4.8",
     "pg": "^8.22.0",
     "vue": "^3.5.35",
-    "vue-router": "^5.1.0",
-    "winston": "^3.19.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",

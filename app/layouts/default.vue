@@ -1,5 +1,17 @@
 <script setup lang="ts">
+const {locales, setLocale} = useI18n()
+const currentLocale = ref('en')
 const open = ref(true)
+
+const localeOptions = computed(() => locales.value.map(locale => ({
+  value: locale.code,
+  label: locale.code === 'en' ? '🇺🇸 English' : '🇮🇩 Indonesia'
+})))
+
+watch(currentLocale, (newLocale) => {
+  setLocale(newLocale)
+})
+
 const route = useRoute()
 
 const {data: notifications} = await useFetch('/api/notifications')
@@ -54,7 +66,15 @@ function getItems(): NavigationMenuItem[] {
         collapsible="icon"
     >
       <template #header>
-        <UHeader />
+        <div class="flex flex-col gap-2">
+          <UHeader title="Initial Project"/>
+          <USelect
+              v-model="currentLocale"
+              :items="localeOptions"
+              placeholder="Language"
+              class="w-50"
+          />
+        </div>
       </template>
 
       <template #default="{ state }">

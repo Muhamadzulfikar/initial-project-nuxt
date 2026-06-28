@@ -2,7 +2,7 @@
 import type {SelectItem, BreadCrumbItem} from '@nuxt/ui'
 
 const loading = ref(true)
-const statusFilter = ref()
+const statusFilter = ref(null)
 
 const statusOptions = <SelectItem[]>([
   {value: null, label: 'All Status'},
@@ -37,11 +37,10 @@ const breadcrumbs = <BreadCrumbItem[]>([
       :loading=loading
       :filters="{ status: statusFilter }"
       :columns="[
-        { key: 'id', label: 'ID' },
-        { key: 'date', label: 'Date' },
-        { key: 'status', label: 'Status' },
+        { key: 'date', label: 'date' },
         { key: 'email', label: 'Email' },
-        { key: 'amount', label: 'Amount' }
+        { key: 'amount', label: 'amount' },
+        { key: 'status', label: 'Status' }
       ]"
       @update:loading="loading = $event"
   >

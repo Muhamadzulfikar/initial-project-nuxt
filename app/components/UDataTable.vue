@@ -104,7 +104,7 @@ const tableColumns = computed(() => {
     id: col.key,
     key: col.key,
     accessorKey: col.key,
-    header: col.label,
+    header: $t(col.label),
     class: 'cursor-pointer select-none'
   }))
 
@@ -113,7 +113,7 @@ const tableColumns = computed(() => {
       id: 'actions',
       key: 'actions',
       accessorKey: 'actions',
-      header: 'Actions',
+      header: $t('actions'),
       class: ''
     })
   }
@@ -221,7 +221,7 @@ function onPageSizeChange() {
       <div class="flex items-center gap-2">
         <UButton icon="i-lucide-chevrons-left" variant="ghost" :disabled="page === 1" @click="firstPage"/>
         <UButton icon="i-lucide-chevron-left" variant="ghost" :disabled="page === 1" @click="prevPage"/>
-        <span class="text-sm text-muted">Page {{ page }} of {{ totalPages }}</span>
+        <span class="text-sm">Page {{ page }} of {{ totalPages }}</span>
         <UButton icon="i-lucide-chevron-right" variant="ghost" :disabled="page === totalPages" @click="nextPage"/>
         <UButton icon="i-lucide-chevrons-right" variant="ghost" :disabled="page === totalPages" @click="lastPage"/>
       </div>

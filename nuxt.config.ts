@@ -5,8 +5,8 @@ export default defineNuxtConfig({
     modules: ['@nuxt/ui', '@logto/nuxt', 'evlog/nuxt'],
     css: ['~/assets/css/main.css'],
     colorMode: {
-        preference: 'light',
-        fallback: 'light',
+        preference: 'dark',
+        fallback: 'dark',
         forced: true
     },
     runtimeConfig: {

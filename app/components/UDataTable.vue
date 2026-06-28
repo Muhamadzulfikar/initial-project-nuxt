@@ -1,6 +1,6 @@
 <style scoped>
 :deep(td.text-muted) {
-  color: #000000 !important;
+  color: white !important;
 }
 </style>
 

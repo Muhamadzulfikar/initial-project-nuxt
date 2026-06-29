@@ -1,2 +1,8 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+@media (max-width: 1023px) {
+  [aria-label="Open menu"] > span[data-slot="leadingIcon"] {
+    display: none !important;
+  }
+}

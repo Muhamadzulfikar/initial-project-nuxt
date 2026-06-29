@@ -2,6 +2,15 @@
 const {locales, setLocale} = useI18n()
 const currentLocale = ref('en')
 const open = ref(true)
+const isMobile = ref(false)
+
+onMounted(() => {
+  const checkMobile = () => {
+    isMobile.value = window.matchMedia('(max-width: 1023px)').matches
+  }
+  checkMobile()
+  window.matchMedia('(max-width: 1023px)').addEventListener('change', checkMobile)
+})
 
 const localeOptions = computed(() => locales.value.map(locale => ({
   value: locale.code,
@@ -38,25 +47,26 @@ const {data: navItems} = await useFetch('/api/nav-items')
 function getItems(): NavigationMenuItem[] {
   if (!navItems.value) return []
 
-  const currentPath = route.path
+  const currentPath = route.path.replace(/^\/(en|id)/, '') || '/'
 
-  return navItems.value.map((item) => {
-    const hasActiveChild = item.children?.some(child => child.to === currentPath)
-
-    return {
-      label: item.label,
-      icon: item.icon,
-      to: item.to,
-      defaultOpen: hasActiveChild ? true : undefined,
-      children: item.children?.map(child => ({
-        label: child.label,
-        icon: child.icon,
-        to: child.to
-      }))
-    }
-  }) satisfies NavigationMenuItem[]
+  return navItems.value.map((item) => ({
+    label: item.label,
+    icon: item.icon,
+    to: item.to,
+    defaultOpen: item.children?.some(child => child.to === currentPath) ? true : undefined,
+    children: item.children?.map(child => ({
+      label: child.label,
+      icon: child.icon,
+      to: child.to
+    }))
+  })) satisfies NavigationMenuItem[]
 }
 
+watch(() => route.path, () => {
+  if (isMobile.value) {
+    open.value = false
+  }
+})
 </script>
 
 <template>
@@ -66,13 +76,13 @@ function getItems(): NavigationMenuItem[] {
         collapsible="icon"
     >
       <template #header>
-        <div class="flex flex-col gap-2">
-          <UHeader title="Initial Project"/>
+        <div class="flex flex-col items-center gap-2 w-full">
+          <UHeader title="Initial Project" class="text-center"/>
           <USelect
               v-model="currentLocale"
               :items="localeOptions"
               placeholder="Language"
-              class="w-50"
+              class="w-full"
           />
         </div>
       </template>

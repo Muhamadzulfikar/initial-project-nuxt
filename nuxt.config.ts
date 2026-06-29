@@ -2,7 +2,13 @@
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: {enabled: true},
-    modules: ['@nuxt/ui', '@logto/nuxt', 'evlog/nuxt', '@nuxtjs/i18n'],
+    modules: [
+        '@nuxt/ui',
+        '@logto/nuxt',
+        'evlog/nuxt',
+        '@nuxtjs/i18n',
+        '@nuxthub/core'
+    ],
     css: ['~/assets/css/main.css'],
     colorMode: {
         preference: 'dark',
@@ -35,5 +41,10 @@ export default defineNuxtConfig({
             {code: 'en', name: 'English', file: 'en.json'},
             {code: 'id', name: 'Indonesia', file: 'id.json'}
         ]
-    }
+    },
+    hub: {
+        database: true,
+        cache: true,
+        kv: true,
+    },
 })

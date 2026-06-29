@@ -4,7 +4,7 @@
   "amount": "Jumlah",
   "email": "Email",
   "status": "Status",
-  "filename": "Filename",
+  "filename": "Nama File",
   "warning": "Warning",
   "info": "Info",
   "danger": "Danger"

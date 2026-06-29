@@ -1,4 +1,10 @@
 {
+  "actions": "Actions",
   "date": "Date",
-  "actions": "Actions"
+  "email": "Email",
+  "status": "Status",
+  "filename": "Filename",
+  "warning": "Warning",
+  "info": "Info",
+  "danger": "Danger"
 }

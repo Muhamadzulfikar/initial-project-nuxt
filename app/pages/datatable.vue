@@ -38,9 +38,9 @@ const breadcrumbs = <BreadCrumbItem[]>([
       :filters="{ status: statusFilter }"
       :columns="[
         { key: 'date', label: 'date' },
-        { key: 'email', label: 'Email' },
+        { key: 'email', label: 'email' },
         { key: 'amount', label: 'amount' },
-        { key: 'status', label: 'Status' }
+        { key: 'status', label: 'status' }
       ]"
       @update:loading="loading = $event"
   >

@@ -19,10 +19,10 @@ function getLogDetailLink(filename: string, level: string) {
   <UDataTable
       api-url="/api/logs"
       :columns="[
-        { key: 'filename', label: 'File Name' },
-        { key: 'total_info', label: 'Info' },
-        { key: 'total_warning', label: 'Warning' },
-        { key: 'total_error', label: 'Error' }
+        { key: 'filename', label: 'filename' },
+        { key: 'total_info', label: 'info' },
+        { key: 'total_warning', label: 'warning' },
+        { key: 'total_error', label: 'error' }
       ]"
       :is-hide-actions="true">
     <template #total_info-cell="{ row }">

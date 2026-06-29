@@ -1,5 +1,11 @@
 {
-  "date": "Tanggal",
   "actions": "Aksi",
-  "amount": "Jumlah"
+  "date": "Tanggal",
+  "amount": "Jumlah",
+  "email": "Email",
+  "status": "Status",
+  "filename": "Filename",
+  "warning": "Warning",
+  "info": "Info",
+  "danger": "Danger"
 }

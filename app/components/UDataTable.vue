@@ -126,6 +126,24 @@ const totalPages = computed(() => {
   return Math.ceil(total / pageSize.value) || 1
 })
 
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = page.value
+
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+
+  let start = Math.max(1, current - 2)
+  let end = Math.min(total, start + 4)
+
+  if (end - start < 4) {
+    start = Math.max(1, end - 4)
+  }
+
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+})
+
 const paginatedData = computed(() => {
   return tablesData.value?.data || []
 })
@@ -221,7 +239,13 @@ function onPageSizeChange() {
       <div class="flex items-center gap-2">
         <UButton icon="i-lucide-chevrons-left" variant="ghost" :disabled="page === 1" @click="firstPage"/>
         <UButton icon="i-lucide-chevron-left" variant="ghost" :disabled="page === 1" @click="prevPage"/>
-        <span class="text-sm">Page {{ page }} of {{ totalPages }}</span>
+        <UButton
+            v-for="p in visiblePages"
+            :key="p"
+            :label="String(p)"
+            :variant="p === page ? 'solid' : 'ghost'"
+            @click="page = p"
+        />
         <UButton icon="i-lucide-chevron-right" variant="ghost" :disabled="page === totalPages" @click="nextPage"/>
         <UButton icon="i-lucide-chevrons-right" variant="ghost" :disabled="page === totalPages" @click="lastPage"/>
       </div>
